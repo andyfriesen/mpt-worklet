@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <script>
+        class W extends AudioWorkletNode {
+            constructor(context) {
+                super(context, 'libopenmpt-processor');
+            }
+        }
+
+        const ctx = new AudioContext();
+        const p = ctx.audioWorklet.addModule('mpt-worklet.js');
+
+        function go() {
+            let node;
+            let butterfl;
+
+            ctx.resume();
+
+            p.then(a => {
+                console.log('worklet loaded');
+                return fetch("/butterfl.xm")
+            }).catch(e => {
+                console.log('failed to load worklet', e);
+                // debugger;
+                throw e;
+            }).then(response => {
+                return response.arrayBuffer();
+            }).then(array => {
+                console.log("Read mod");
+                butterfl = array;
+
+                node = new W(ctx);
+
+                node.connect(ctx.destination);
+            });
+        }
+    </script>
+    <button onclick="go()">Hello</button>
+</body>
+
+</html>
