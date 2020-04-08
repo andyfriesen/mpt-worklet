@@ -7,38 +7,20 @@
 
 <body>
     <script>
-        class W extends AudioWorkletNode {
-            constructor(context) {
-                super(context, 'libopenmpt-processor');
-            }
-        }
-
-        const ctx = new AudioContext();
-        const p = ctx.audioWorklet.addModule('mpt-worklet.js');
-
-        function go() {
+        async function go() {
             let node;
-            let butterfl;
 
-            ctx.resume();
+            const ctx = new AudioContext();
 
-            p.then(a => {
-                console.log('worklet loaded');
-                return fetch("/butterfl.xm")
-            }).catch(e => {
-                console.log('failed to load worklet', e);
-                // debugger;
-                throw e;
-            }).then(response => {
-                return response.arrayBuffer();
-            }).then(array => {
-                console.log("Read mod");
-                butterfl = array;
+            await ctx.audioWorklet.addModule('worklet-main.js');
+            const response = await fetch("/butterfl.xm")
+            const butterfl = await response.arrayBuffer();
 
-                node = new W(ctx);
+            node = new AudioWorkletNode(ctx, 'libopenmpt-processor');
+            node.connect(ctx.destination);
+            console.log('OK!');
 
-                node.connect(ctx.destination);
-            });
+            node.port.postMessage(butterfl);
         }
     </script>
     <button onclick="go()">Hello</button>

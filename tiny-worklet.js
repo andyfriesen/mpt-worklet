@@ -7,7 +7,7 @@ class MyWorkletProcessor extends AudioWorkletProcessor {
     process(inputs, outputs, parameters) {
       // audio processing code here.
     }
-  }
+}
   
-  registerProcessor('libopenmpt-processor', MyWorkletProcessor);
+registerProcessor('libopenmpt-processor', MyWorkletProcessor);
   
