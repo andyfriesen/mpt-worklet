@@ -12,6 +12,8 @@ namespace {
 openmpt::module* mod = nullptr;
 } // namespace
 
+// FIXME: If we used the C API instead, we could delete this whole file and do it all on the JS side.
+
 extern "C" void load(void* data, int dataSize) {
     if (mod) {
         delete mod;
