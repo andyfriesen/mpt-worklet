@@ -176,7 +176,7 @@ def EmscriptenEnvironment():
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=worker',
         '-s', 'SINGLE_FILE=1',
-        '-s', 'EXPORTED_FUNCTIONS=[\'_load\',\'_process\']',
+        '-s', 'EXPORTED_FUNCTIONS=[\'_load\',\'_process1\',\'_process2\',\'_process4\']',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=[\'cwrap\']',
         '-s', 'DISABLE_EXCEPTION_CATCHING=0',
     ]
