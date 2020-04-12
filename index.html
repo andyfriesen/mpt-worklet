@@ -16,9 +16,9 @@
             const response = await fetch("/butterfl.xm")
             const butterfl = await response.arrayBuffer();
 
-            node = new AudioWorkletNode(ctx, 'libopenmpt-processor');
+            node = new AudioWorkletNode(ctx, 'libopenmpt-processor', {numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2]});
             node.connect(ctx.destination);
-            console.log('OK!');
+            console.log('Worklet initialized.  Sending song!');
 
             node.port.postMessage(butterfl);
         }

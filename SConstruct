@@ -178,6 +178,7 @@ def EmscriptenEnvironment():
         '-s', 'SINGLE_FILE=1',
         '-s', 'EXPORTED_FUNCTIONS=[\'_load\',\'_process\']',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=[\'cwrap\']',
+        '-s', 'DISABLE_EXCEPTION_CATCHING=0',
     ]
 
     cflags = ['-fcolor-diagnostics']
@@ -262,6 +263,7 @@ CPPPATH=[
 LINKFLAGS=[
     '--pre-js', 'pre.js',
     '--post-js', 'post.js',
+    '--source-map-base', 'http://localhost/',
 ])
 
 worklet = env.Program('mpt-worklet.js', OPENMPT_SRC + ['worklet.cpp'])

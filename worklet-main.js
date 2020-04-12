@@ -1,37 +1,56 @@
 import Module from './mpt-worklet.js';
 
 let load_;
-let process_;
+let process1_ = () => {};
+let process2_ = () => {};
+let process4_ = () => {};
 let bufferSize;
 let leftPtr;
 let rightPtr;
 
+let leftArray;
+let rightArray;
+
+let initResolver = null;
+const init = new Promise((resolve) => { initResolver = resolve; });
+
 Module.onRuntimeInitialized = function() {
-    console.log('onRuntimeInitialized');
     const BUFFERSIZE = 480;
 
     bufferSize = BUFFERSIZE;
-    leftPtr = Module._malloc(BUFFERSIZE * 2);
-    rightPtr = Module._malloc(BUFFERSIZE * 2);
+    leftPtr = Module._malloc(BUFFERSIZE * 4);
+    leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr + BUFFERSIZE) >> 2);
+    leftArray.fill(0);
+
+    rightPtr = Module._malloc(BUFFERSIZE * 4);
+    rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr + BUFFERSIZE) >> 2);
+    rightArray.fill(0);
 
     load_ = Module.cwrap('load', 'void', ['number', 'number']);
-    process_ = Module.cwrap('process', 'void', ['number', 'number', 'number']);
-    console.log('registered');
+    process1_ = Module.cwrap('process1', 'void', ['number', 'number']);
+    process2_ = Module.cwrap('process2', 'void', ['number', 'number', 'number']);
+    process4_ = Module.cwrap('process4', 'void', ['number', 'number', 'number', 'number', 'number']);
+
+    initResolver();
 }
 
 class LibopenmptProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
 
-        this.port.onmessage = (event) => {
-            const data = event.data; // ArrayBuffer
-            if (data.byteLength == 0) {
+        this.port.onmessage = async (event) => {
+            await init;
+
+            const srcBuffer = event.data; // ArrayBuffer
+            if (srcBuffer.byteLength == 0) {
                 load_(0, 0);
             } else {
-                const dataPtr = Module._malloc(data.byteLength);
-                Module.HEAPU8.set(data, dataPtr);
+                const srcArray = new Uint8Array(srcBuffer);
 
-                load_(dataPtr, data.byteLength);
+                const dataPtr = Module._malloc(srcArray.length);
+                Module.HEAPU8.set(srcArray, dataPtr);
+
+                load_(dataPtr, srcArray.length);
 
                 Module._free(dataPtr);
             }
@@ -41,14 +60,18 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
     }
 
     process(inputs, outputs, parameters) {
+        if (!leftPtr || !rightPtr)
+            return true;
+
         const left = outputs[0][0]; // Float32Array
-        // const right = outputs[0][1];
+        const right = outputs[0][1];
 
-        process_(left.length, leftPtr, rightPtr);
+        process2_(left.length, leftPtr, rightPtr);
 
-        // Also upsample from int16 to float32
-        left.set(Module.HEAPU16.subarray(leftPtr >> 1, (leftPtr + left.length) >> 1));
-        // right.set(Module.HEAPU16.subarray(rightPtr >> 1, (rightPtr + right.length) >> 1));
+        left.set(Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + left.length));
+        right.set(Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + right.length));
+
+        return true;
     }
 }
 
