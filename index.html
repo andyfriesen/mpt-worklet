@@ -17,25 +17,29 @@
                 Object.assign(defaultOptions, options);
                 super(ctx, 'libopenmpt-processor', defaultOptions);
             }
+
+            setPosition(pos) {
+                this.port.postMessage({setPosition: 0});
+            }
+
+            stop() {
+                this.port.postMessage({songData: new ArrayBuffer(0)});
+            }
         }
 
         let node;
+        let ctx;
 
-        async function go() {
-            const ctx = new AudioContext();
+        async function init() {
+            ctx = new AudioContext();
 
             await ctx.audioWorklet.addModule('worklet-main.js');
-            const response = await fetch("/butterfl.xm")
-            const butterfl = await response.arrayBuffer();
 
             node = new LibOpenmptNode(ctx);
             node.connect(ctx.destination);
-            console.log('Worklet initialized.  Sending song!');
-
-            node.port.postMessage({songData: butterfl, setRepeatCount: -1});
 
             node.port.onmessage = (msg) => {
-                if (msg.data.position) {
+                if (msg.data.position != null) {
                     document.getElementById('position').innerText = Math.round(msg.data.position);
                 }
             };
@@ -45,12 +49,22 @@
             }, 1000);
         }
 
-        function restart() {
-            node.port.postMessage({setPosition: 0});
+        async function play() {
+            await initPromise;
+
+            ctx.resume();
+            const response = await fetch("/butterfl.xm");
+            const butterfl = await response.arrayBuffer();
+
+            node.port.postMessage({songData: butterfl, setRepeatCount: -1});
         }
+
+        const initPromise = init();
+
     </script>
-    <button onclick="go()">Play</button>
-    <button onclick="restart()">Restart</button>
+    <button onclick="play()">Play</button>
+    <button onclick="node.setPosition(0)">Restart</button>
+    <button onclick="node.stop();">Stop</button>
     <p>Position: <span id="position"></span></p>
 </body>
 

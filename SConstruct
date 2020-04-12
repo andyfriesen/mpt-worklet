@@ -272,10 +272,10 @@ CPPPATH=[
     os.path.join(openmptdir, 'build/svn_version'),
 ],
 LINKFLAGS=[
-    '--pre-js', 'pre.js',
-    '--post-js', 'post.js',
+    '--pre-js', 'src/pre.js',
+    '--post-js', 'src/post.js',
     '--source-map-base', 'http://localhost/',
 ])
 
-worklet = env.Program('mpt-worklet.js', OPENMPT_SRC + ['worklet.cpp'])
-env.Depends(worklet, ['pre.js', 'post.js'])
+worklet = env.Program('mpt-worklet.js', OPENMPT_SRC + ['src/worklet.cpp'])
+env.Depends(worklet, ['src/pre.js', 'src/post.js'])

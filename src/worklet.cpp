@@ -37,6 +37,7 @@ extern "C" void load(void* data, int dataSize) {
 
 extern "C" void process1(int size, float* outPtr) {
     if (!mod) {
+        std::fill(outPtr, outPtr + size, 0);
         return;
     }
 
@@ -45,6 +46,8 @@ extern "C" void process1(int size, float* outPtr) {
 
 extern "C" void process2(int size, float* leftPtr, float* rightPtr) {
     if (!mod) {
+        std::fill(leftPtr, leftPtr + size, 0);
+        std::fill(rightPtr, rightPtr + size, 0);
         return;
     }
 
@@ -53,6 +56,10 @@ extern "C" void process2(int size, float* leftPtr, float* rightPtr) {
 
 extern "C" void process4(int size, float* leftPtr, float* rightPtr, float* leftBackPtr, float* rightBackPtr) {
     if (!mod) {
+        std::fill(leftPtr, leftPtr + size, 0);
+        std::fill(rightPtr, rightPtr + size, 0);
+        std::fill(leftBackPtr, leftBackPtr + size, 0);
+        std::fill(rightBackPtr, rightBackPtr + size, 0);
         return;
     }
 
