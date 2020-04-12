@@ -1,6 +1,7 @@
 import sys
 import os
 import os.path
+import json
 
 openmptdir = '../openmpt'
 
@@ -172,11 +173,21 @@ def EmscriptenEnvironment():
     env['CC'] = emcc
     env['CXX'] = emcc
 
+    exportedFunctions = [
+        '_load',
+        '_process1',
+        '_process2',
+        '_process4',
+        '_setRepeatCount',
+        '_setPosition',
+        '_getPosition'
+    ]
+
     emscriptenOpts = [
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=worker',
         '-s', 'SINGLE_FILE=1',
-        '-s', 'EXPORTED_FUNCTIONS=[\'_load\',\'_process1\',\'_process2\',\'_process4\',\'_setRepeatCount\']',
+        '-s', 'EXPORTED_FUNCTIONS=' + json.dumps(exportedFunctions),
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=[\'cwrap\']',
         '-s', 'DISABLE_EXCEPTION_CATCHING=0',
     ]

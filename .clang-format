@@ -1,0 +1,10 @@
+---
+Language:        Cpp
+IndentWidth:     4
+Standard:        Auto
+TabWidth:        8
+UseTab:          Never
+PointerAlignment: Left
+ColumnLimit: 120
+...
+

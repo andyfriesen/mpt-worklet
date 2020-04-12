@@ -5,6 +5,8 @@ let process1_ = () => {};
 let process2_ = () => {};
 let process4_ = () => {};
 let setRepeatCount_ = (rc) => {};
+let setPosition_ = (p) => {};
+let getPosition_ = () => 0;
 let bufferSize;
 let leftPtr;
 let rightPtr;
@@ -32,6 +34,8 @@ Module.onRuntimeInitialized = function() {
     process2_ = Module.cwrap('process2', 'void', ['number', 'number', 'number']);
     process4_ = Module.cwrap('process4', 'void', ['number', 'number', 'number', 'number', 'number']);
     setRepeatCount_ = Module.cwrap('setRepeatCount', 'void', ['number']);
+    setPosition_ = Module.cwrap('setPosition', 'void', ['number']);
+    getPosition_ = Module.cwrap('getPosition', 'number', []);
 
     initResolver();
 }
@@ -43,9 +47,9 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
         this.port.onmessage = async (event) => {
             await init;
 
-            const {repeatCount, songData} = event.data;
+            const {songData, setRepeatCount, setPosition, getPosition} = event.data;
 
-            if (songData) { // ArrayBuffer
+            if (songData != null) { // ArrayBuffer
                 if (songData.byteLength == 0) {
                     load_(0, 0);
                 } else {
@@ -60,15 +64,24 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
                 }
             }
 
-            if (repeatCount) {
-                setRepeatCount_(repeatCount);
+            if (setRepeatCount != null) {
+                setRepeatCount_(setRepeatCount);
+            }
+
+            if (setPosition != null) {
+                setPosition_(setPosition);
+            }
+
+            if (getPosition != null) {
+                this.port.postMessage({position: getPosition_()});
             }
         };
     }
 
     process(inputs, outputs, parameters) {
-        if (!leftPtr || !rightPtr)
+        if (!leftPtr || !rightPtr) {
             return true;
+        }
 
         const left = outputs[0][0]; // Float32Array
         const right = outputs[0][1];

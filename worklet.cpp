@@ -4,16 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <emscripten.h>
-
 #include "libopenmpt/libopenmpt.hpp"
-#include "libopenmpt/libopenmpt_stream_callbacks_buffer.h"
 
 const int SAMPLERATE = 48000;
 
 namespace {
 openmpt::module* mod = nullptr;
-
 } // namespace
 
 extern "C" void load(void* data, int dataSize) {
@@ -64,6 +60,21 @@ extern "C" void process4(int size, float* leftPtr, float* rightPtr, float* leftB
 }
 
 extern "C" void setRepeatCount(int repeatCount) {
-    if (mod)
+    if (mod) {
         mod->set_repeat_count(repeatCount);
+    }
+}
+
+extern "C" void setPosition(double pos) {
+    if (mod) {
+        mod->set_position_seconds(pos);
+    }
+}
+
+extern "C" double getPosition() {
+    if (mod) {
+        return mod->get_position_seconds();
+    } else {
+        return 0;
+    }
 }

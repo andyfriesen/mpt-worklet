@@ -7,23 +7,51 @@
 
 <body>
     <script>
-        async function go() {
-            let node;
+        class LibOpenmptNode extends AudioWorkletNode {
+            constructor(ctx, options) {
+                const defaultOptions = {
+                    numberOfInputs: 0,
+                    numberOfOutputs: 1,
+                    outputChannelCount: [2]
+                };
+                Object.assign(defaultOptions, options);
+                super(ctx, 'libopenmpt-processor', defaultOptions);
+            }
+        }
 
+        let node;
+
+        async function go() {
             const ctx = new AudioContext();
 
             await ctx.audioWorklet.addModule('worklet-main.js');
-            const response = await fetch("/milksun.it")
+            const response = await fetch("/butterfl.xm")
             const butterfl = await response.arrayBuffer();
 
-            node = new AudioWorkletNode(ctx, 'libopenmpt-processor', {numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2]});
+            node = new LibOpenmptNode(ctx);
             node.connect(ctx.destination);
             console.log('Worklet initialized.  Sending song!');
 
-            node.port.postMessage({songData: butterfl, repeatCount: -1});
+            node.port.postMessage({songData: butterfl, setRepeatCount: -1});
+
+            node.port.onmessage = (msg) => {
+                if (msg.data.position) {
+                    document.getElementById('position').innerText = Math.round(msg.data.position);
+                }
+            };
+
+            setInterval(() => {
+                node.port.postMessage({getPosition: 1});
+            }, 1000);
+        }
+
+        function restart() {
+            node.port.postMessage({setPosition: 0});
         }
     </script>
-    <button onclick="go()">Hello</button>
+    <button onclick="go()">Play</button>
+    <button onclick="restart()">Restart</button>
+    <p>Position: <span id="position"></span></p>
 </body>
 
 </html>
