@@ -4,6 +4,7 @@ let load_;
 let process1_ = () => {};
 let process2_ = () => {};
 let process4_ = () => {};
+let setRepeatCount_ = (rc) => {};
 let bufferSize;
 let leftPtr;
 let rightPtr;
@@ -19,17 +20,18 @@ Module.onRuntimeInitialized = function() {
 
     bufferSize = BUFFERSIZE;
     leftPtr = Module._malloc(BUFFERSIZE * 4);
-    leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr + BUFFERSIZE) >> 2);
+    leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + BUFFERSIZE);
     leftArray.fill(0);
 
     rightPtr = Module._malloc(BUFFERSIZE * 4);
-    rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr + BUFFERSIZE) >> 2);
+    rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + BUFFERSIZE);
     rightArray.fill(0);
 
     load_ = Module.cwrap('load', 'void', ['number', 'number']);
     process1_ = Module.cwrap('process1', 'void', ['number', 'number']);
     process2_ = Module.cwrap('process2', 'void', ['number', 'number', 'number']);
     process4_ = Module.cwrap('process4', 'void', ['number', 'number', 'number', 'number', 'number']);
+    setRepeatCount_ = Module.cwrap('setRepeatCount', 'void', ['number']);
 
     initResolver();
 }
@@ -41,22 +43,27 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
         this.port.onmessage = async (event) => {
             await init;
 
-            const srcBuffer = event.data; // ArrayBuffer
-            if (srcBuffer.byteLength == 0) {
-                load_(0, 0);
-            } else {
-                const srcArray = new Uint8Array(srcBuffer);
+            const {repeatCount, songData} = event.data;
 
-                const dataPtr = Module._malloc(srcArray.length);
-                Module.HEAPU8.set(srcArray, dataPtr);
+            if (songData) { // ArrayBuffer
+                if (songData.byteLength == 0) {
+                    load_(0, 0);
+                } else {
+                    const srcArray = new Uint8Array(songData);
 
-                load_(dataPtr, srcArray.length);
+                    const dataPtr = Module._malloc(srcArray.length);
+                    Module.HEAPU8.set(srcArray, dataPtr);
 
-                Module._free(dataPtr);
+                    load_(dataPtr, srcArray.length);
+
+                    Module._free(dataPtr);
+                }
+            }
+
+            if (repeatCount) {
+                setRepeatCount_(repeatCount);
             }
         };
-
-        this.port.postMessage('ready');
     }
 
     process(inputs, outputs, parameters) {

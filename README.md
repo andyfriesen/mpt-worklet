@@ -24,3 +24,12 @@ scons -j4
 ```
 
 This will compile libopenmpt and the worklet asm.js all in one go.
+
+# To do
+
+Add hooks to control playback:
+
+* Pause and resume
+* get/set Repeat count
+* get/set position (aka seeking)
+* get duration

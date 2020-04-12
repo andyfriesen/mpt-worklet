@@ -1,12 +1,15 @@
 const self = {location: {href: 'blah'}};
-const importScripts = () => {};
+function importScripts() {}
 const performance = {
-    now: () => Date.now()
-}
+    now() {
+        return Date.now();
+    }
+};
 
 const crypto = {
     getRandomValues(array) {
-        for (let i = 0; i < array.length; i++)
-            array[i] = (Math.random()*256)|0;
+        for (let i = 0; i < array.length; i++) {
+            array[i] = (Math.random() * 256) | 0;
+        }
     }
 };

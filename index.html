@@ -13,14 +13,14 @@
             const ctx = new AudioContext();
 
             await ctx.audioWorklet.addModule('worklet-main.js');
-            const response = await fetch("/butterfl.xm")
+            const response = await fetch("/milksun.it")
             const butterfl = await response.arrayBuffer();
 
             node = new AudioWorkletNode(ctx, 'libopenmpt-processor', {numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2]});
             node.connect(ctx.destination);
             console.log('Worklet initialized.  Sending song!');
 
-            node.port.postMessage(butterfl);
+            node.port.postMessage({songData: butterfl, repeatCount: -1});
         }
     </script>
     <button onclick="go()">Hello</button>

@@ -63,3 +63,7 @@ extern "C" void process4(int size, float* leftPtr, float* rightPtr, float* leftB
     mod->read(SAMPLERATE, size, leftPtr, rightPtr, leftBackPtr, rightBackPtr);
 }
 
+extern "C" void setRepeatCount(int repeatCount) {
+    if (mod)
+        mod->set_repeat_count(repeatCount);
+}
