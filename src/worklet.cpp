@@ -37,26 +37,26 @@ extern "C" void load(void* data, int dataSize) {
     }
 }
 
-extern "C" void process1(int size, float* outPtr) {
+extern "C" void process1(int sampleRate, int size, float* outPtr) {
     if (!mod) {
         std::fill(outPtr, outPtr + size, 0);
         return;
     }
 
-    mod->read(SAMPLERATE, size, outPtr);
+    mod->read(sampleRate, size, outPtr);
 }
 
-extern "C" void process2(int size, float* leftPtr, float* rightPtr) {
+extern "C" void process2(int sampleRate, int size, float* leftPtr, float* rightPtr) {
     if (!mod) {
         std::fill(leftPtr, leftPtr + size, 0);
         std::fill(rightPtr, rightPtr + size, 0);
         return;
     }
 
-    mod->read(SAMPLERATE, size, leftPtr, rightPtr);
+    mod->read(sampleRate, size, leftPtr, rightPtr);
 }
 
-extern "C" void process4(int size, float* leftPtr, float* rightPtr, float* leftBackPtr, float* rightBackPtr) {
+extern "C" void process4(int sampleRate, int size, float* leftPtr, float* rightPtr, float* leftBackPtr, float* rightBackPtr) {
     if (!mod) {
         std::fill(leftPtr, leftPtr + size, 0);
         std::fill(rightPtr, rightPtr + size, 0);
@@ -65,7 +65,7 @@ extern "C" void process4(int size, float* leftPtr, float* rightPtr, float* leftB
         return;
     }
 
-    mod->read(SAMPLERATE, size, leftPtr, rightPtr, leftBackPtr, rightBackPtr);
+    mod->read(sampleRate, size, leftPtr, rightPtr, leftBackPtr, rightBackPtr);
 }
 
 extern "C" void setRepeatCount(int repeatCount) {

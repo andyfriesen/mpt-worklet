@@ -28,9 +28,9 @@ Module.onRuntimeInitialized = function() {
     rightArray.fill(0);
 
     load_ = Module.cwrap('load', 'void', ['number', 'number']);
-    process1_ = Module.cwrap('process1', 'void', ['number', 'number']);
-    process2_ = Module.cwrap('process2', 'void', ['number', 'number', 'number']);
-    process4_ = Module.cwrap('process4', 'void', ['number', 'number', 'number', 'number', 'number']);
+    process1_ = Module.cwrap('process1', 'void', ['number', 'number', 'number']);
+    process2_ = Module.cwrap('process2', 'void', ['number', 'number', 'number', 'number']);
+    process4_ = Module.cwrap('process4', 'void', ['number', 'number', 'number', 'number', 'number', 'number']);
     setRepeatCount_ = Module.cwrap('setRepeatCount', 'void', ['number']);
     setPosition_ = Module.cwrap('setPosition', 'void', ['number']);
     getPosition_ = Module.cwrap('getPosition', 'number', []);
@@ -84,7 +84,7 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
         const left = outputs[0][0]; // Float32Array
         const right = outputs[0][1];
 
-        process2_(left.length, leftPtr, rightPtr);
+        process2_(sampleRate, left.length, leftPtr, rightPtr);
 
         left.set(Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + left.length));
         right.set(Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + right.length));
