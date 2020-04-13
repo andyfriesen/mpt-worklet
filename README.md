@@ -11,6 +11,31 @@ lately I am porting old terrible DOS codebases to run in WASM.
 2. It only works over https.  localhost also works as a special exception.
 3. (this one is on me!) This is barely more than a proof of concept just now.  Buyer beware!
 
+# How to use it
+
+The worklet is contained in the single JS file `mpt-worklet.js`.  It's all you need.
+
+Check index.html for a working example.  tldr:
+
+```javascript
+ctx = new AudioContext();
+
+await ctx.audioWorklet.addModule('mpt-worklet.js');
+
+node = new AudioWorkletNode(ctx, 'libopenmpt-processor', {
+    numberOfInputs: 0,
+    numberOfOutputs: 1,
+    outputChannelCount: [2] // stereo is the only supported configuration right now
+});
+node.connect(ctx.destination);
+
+// Load some mod file into an ArrayBuffer
+const response = await fetch("milksun.it");
+const songData = await response.arrayBuffer();
+
+node.port.postMessage({songData: songData, setRepeatCount: -1});
+```
+
 # How to build
 
 I use WSL on Windows.  Ubuntu and Mac should be fine?
@@ -30,6 +55,4 @@ This will compile libopenmpt and the worklet asm.js all in one go.
 Add hooks to control playback:
 
 * Pause and resume
-* get/set Repeat count
-* get/set position (aka seeking)
 * get duration
