@@ -33,7 +33,7 @@
         async function init() {
             ctx = new AudioContext();
 
-            await ctx.audioWorklet.addModule('worklet-main.js');
+            await ctx.audioWorklet.addModule('mpt-worklet.js');
 
             node = new LibOpenmptNode(ctx);
             node.connect(ctx.destination);
