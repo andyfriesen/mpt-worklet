@@ -7,7 +7,7 @@ lately I am porting old terrible DOS codebases to run in WASM.
 
 # Important limitations
 
-1. AudioWorklet is set to become a standard, but it only works in Chrome derivatives right now.  No Firefox. :/
+1. AudioWorklet is [mostly standard](https://caniuse.com/#search=audioworklet) at this point, but it is not truly totally ubiquitous.
 2. It only works over https.  localhost also works as a special exception.
 3. (this one is on me!) This is barely more than a proof of concept just now.  Buyer beware!
 
