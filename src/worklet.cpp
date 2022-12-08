@@ -8,22 +8,14 @@
 
 const int SAMPLERATE = 48000;
 
-namespace {
-openmpt::module* mod = nullptr;
-} // namespace
-
 // FIXME: If we used the C API instead, we could delete this whole file and do it all on the JS side.
 
-extern "C" void load(void* data, int dataSize) {
-    if (mod) {
-        delete mod;
-        mod = nullptr;
-    }
-
+extern "C" openmpt::module* load(void* data, int dataSize) {
     if (!data) {
-        return;
+        return nullptr;
     }
 
+    openmpt::module* mod = nullptr;
     char* d = (char*)data;
 
     try {
@@ -35,9 +27,17 @@ extern "C" void load(void* data, int dataSize) {
     } catch (...) {
         printf("DOTDOTDOT D:\n");
     }
+
+    return mod;
 }
 
-extern "C" void process1(int sampleRate, int size, float* outPtr) {
+extern "C" void unload(openmpt::module* mod) {
+    if (mod) {
+        delete mod;
+    }
+}
+
+extern "C" void process1(openmpt::module* mod, int sampleRate, int size, float* outPtr) {
     if (!mod) {
         std::fill(outPtr, outPtr + size, 0);
         return;
@@ -46,7 +46,7 @@ extern "C" void process1(int sampleRate, int size, float* outPtr) {
     mod->read(sampleRate, size, outPtr);
 }
 
-extern "C" void process2(int sampleRate, int size, float* leftPtr, float* rightPtr) {
+extern "C" void process2(openmpt::module* mod, int sampleRate, int size, float* leftPtr, float* rightPtr) {
     if (!mod) {
         std::fill(leftPtr, leftPtr + size, 0);
         std::fill(rightPtr, rightPtr + size, 0);
@@ -56,7 +56,7 @@ extern "C" void process2(int sampleRate, int size, float* leftPtr, float* rightP
     mod->read(sampleRate, size, leftPtr, rightPtr);
 }
 
-extern "C" void process4(int sampleRate, int size, float* leftPtr, float* rightPtr, float* leftBackPtr, float* rightBackPtr) {
+extern "C" void process4(openmpt::module* mod, int sampleRate, int size, float* leftPtr, float* rightPtr, float* leftBackPtr, float* rightBackPtr) {
     if (!mod) {
         std::fill(leftPtr, leftPtr + size, 0);
         std::fill(rightPtr, rightPtr + size, 0);
@@ -68,19 +68,19 @@ extern "C" void process4(int sampleRate, int size, float* leftPtr, float* rightP
     mod->read(sampleRate, size, leftPtr, rightPtr, leftBackPtr, rightBackPtr);
 }
 
-extern "C" void setRepeatCount(int repeatCount) {
+extern "C" void setRepeatCount(openmpt::module* mod, int repeatCount) {
     if (mod) {
         mod->set_repeat_count(repeatCount);
     }
 }
 
-extern "C" void setPosition(double pos) {
+extern "C" void setPosition(openmpt::module* mod, double pos) {
     if (mod) {
         mod->set_position_seconds(pos);
     }
 }
 
-extern "C" double getPosition() {
+extern "C" double getPosition(openmpt::module* mod) {
     if (mod) {
         return mod->get_position_seconds();
     } else {

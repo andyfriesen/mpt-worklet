@@ -1,33 +1,18 @@
-let load_;
+let load_ = () => 0;
+let unload_ = () => {};
 let process1_ = () => {};
 let process2_ = () => {};
 let process4_ = () => {};
 let setRepeatCount_ = (rc) => {};
 let setPosition_ = (p) => {};
 let getPosition_ = () => 0;
-let bufferSize;
-let leftPtr;
-let rightPtr;
-
-let leftArray;
-let rightArray;
 
 let initResolver = null;
 const init = new Promise((resolve) => { initResolver = resolve; });
 
 Module.onRuntimeInitialized = function() {
-    const BUFFERSIZE = 480;
-
-    bufferSize = BUFFERSIZE;
-    leftPtr = Module._malloc(BUFFERSIZE * 4);
-    leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + BUFFERSIZE);
-    leftArray.fill(0);
-
-    rightPtr = Module._malloc(BUFFERSIZE * 4);
-    rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + BUFFERSIZE);
-    rightArray.fill(0);
-
-    load_ = Module.cwrap('load', 'void', ['number', 'number']);
+    load_ = Module.cwrap('load', 'number', ['number', 'number']);
+    unload_ = Module.cwrap('unload', 'void', ['number']);
     process1_ = Module.cwrap('process1', 'void', ['number', 'number', 'number']);
     process2_ = Module.cwrap('process2', 'void', ['number', 'number', 'number', 'number']);
     process4_ = Module.cwrap('process4', 'void', ['number', 'number', 'number', 'number', 'number', 'number']);
@@ -42,41 +27,62 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
 
+        const BUFFERSIZE = 480;
+
+        this.bufferSize = BUFFERSIZE;
+
+        const leftPtr = Module._malloc(BUFFERSIZE * 4);; 
+        this.leftPtr = leftPtr;
+        this.leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + BUFFERSIZE);
+        this.leftArray.fill(0);
+
+        const rightPtr = Module._malloc(BUFFERSIZE * 4);
+        this.rightPtr = rightPtr;
+        this.rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + BUFFERSIZE);
+        this.rightArray.fill(0);
+
+        this.mod = 0;
+
         this.port.onmessage = async (event) => {
             await init;
 
             const {songData, setRepeatCount, setPosition, getPosition} = event.data;
 
             if (songData != null) { // ArrayBuffer
-                if (songData.byteLength == 0) {
-                    load_(0, 0);
-                } else {
+                if (this.mod != 0) {
+                    unload_(this.mod);
+                    this.mod = 0;
+                }
+
+                if (songData.byteLength != 0) {
                     const srcArray = new Uint8Array(songData);
 
                     const dataPtr = Module._malloc(srcArray.length);
                     Module.HEAPU8.set(srcArray, dataPtr);
 
-                    load_(dataPtr, srcArray.length);
+                    this.mod = load_(dataPtr, srcArray.length);
 
                     Module._free(dataPtr);
                 }
             }
 
             if (setRepeatCount != null) {
-                setRepeatCount_(setRepeatCount);
+                setRepeatCount_(this.mod, setRepeatCount);
             }
 
             if (setPosition != null) {
-                setPosition_(setPosition);
+                setPosition_(this.mod, setPosition);
             }
 
             if (getPosition != null) {
-                this.port.postMessage({position: getPosition_()});
+                this.port.postMessage(this.mod, {position: getPosition_()});
             }
         };
     }
 
     process(inputs, outputs, parameters) {
+        const leftPtr = this.leftPtr;
+        const rightPtr = this.rightPtr;
         if (!leftPtr || !rightPtr) {
             return true;
         }
@@ -84,7 +90,7 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
         const left = outputs[0][0]; // Float32Array
         const right = outputs[0][1];
 
-        process2_(sampleRate, left.length, leftPtr, rightPtr);
+        process2_(this.mod, sampleRate, left.length, leftPtr, rightPtr);
 
         left.set(Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + left.length));
         right.set(Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + right.length));
