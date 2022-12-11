@@ -83,7 +83,7 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
             }
 
             if (getPaused != null) {
-                this.port.postMessage(this.mod, {position: getPaused_()});
+                this.port.postMessage(this.mod, {paused: getPaused_()});
             }
         };
     }
