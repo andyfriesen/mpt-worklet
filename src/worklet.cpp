@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <utility>
+#include <algorithm>
+#include <exception>
+
 #include "libopenmpt/libopenmpt.hpp"
 
 const int SAMPLERATE = 48000;
@@ -20,8 +24,9 @@ extern "C" ModPlayer* load(const void* data, int dataSize) {
         return nullptr;
     }
 
+    openmpt::module* mpt = nullptr;
     try {
-        const auto mpt = new openmpt::module(data, dataSize);
+        mpt = new openmpt::module(data, dataSize);
         return new ModPlayer { mpt };
     } catch (const openmpt::exception& e) {
         printf("Failed to load module: %s\n", e.what());
@@ -29,6 +34,10 @@ extern "C" ModPlayer* load(const void* data, int dataSize) {
         printf("Some other exception! %s\n", e.what());
     } catch (...) {
         printf("DOTDOTDOT D:\n");
+    }
+
+    if (mpt) {
+        delete mpt;
     }
 
     return nullptr;
