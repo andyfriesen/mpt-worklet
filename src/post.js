@@ -85,6 +85,8 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
         this.rightPtr = rightPtr;
         this.rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + BUFFERSIZE);
         this.rightArray.fill(0);
+        
+        this.initialized = true;
     }
 
     process(inputs, outputs, parameters) {
