@@ -29,8 +29,9 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         
-        this.bufferSize = BUFFERSIZE;
         this.initialized = false;
+        
+        this.bufferSize = BUFFERSIZE;
         this.leftPtr = null;
         this.rightPtr = null;        
         this.mod = 0;
