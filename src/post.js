@@ -6,6 +6,8 @@ let process4_ = () => {};
 let setRepeatCount_ = (rc) => {};
 let setPosition_ = (p) => {};
 let getPosition_ = () => 0;
+let setPaused_ = () => {};
+let getPaused_ = () => false;
 
 let initResolver = null;
 const init = new Promise((resolve) => { initResolver = resolve; });
@@ -19,6 +21,8 @@ Module.onRuntimeInitialized = function() {
     setRepeatCount_ = Module.cwrap('setRepeatCount', 'void', ['number']);
     setPosition_ = Module.cwrap('setPosition', 'void', ['number']);
     getPosition_ = Module.cwrap('getPosition', 'number', []);
+    setPaused_ = Module.cwrap('setPaused', 'void', ['bool']);
+    getPaused_ = Module.cwrap('getPaused', 'bool', []);    
 
     initResolver();
 }
@@ -30,7 +34,7 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
         super();
         
         this.initialized = false;
-        
+
         this.bufferSize = BUFFERSIZE;
         this.leftPtr = null;
         this.rightPtr = null;        
@@ -42,7 +46,7 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
                 this.init();
             }
 
-            const {songData, setRepeatCount, setPosition, getPosition} = event.data;
+            const {songData, setRepeatCount, setPosition, getPosition, setPaused, getPaused} = event.data;
 
             if (songData != null) { // ArrayBuffer
                 if (this.mod != 0) {
@@ -72,6 +76,14 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
 
             if (getPosition != null) {
                 this.port.postMessage(this.mod, {position: getPosition_()});
+            }
+
+            if (setPaused != null) {
+                setPaused_(this.mod, setPaused);
+            }
+
+            if (getPaused != null) {
+                this.port.postMessage(this.mod, {position: getPaused_()});
             }
         };
     }
