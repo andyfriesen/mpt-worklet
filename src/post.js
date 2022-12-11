@@ -23,28 +23,23 @@ Module.onRuntimeInitialized = function() {
     initResolver();
 }
 
+const BUFFERSIZE = 480;
+
 class LibopenmptProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
-
-        const BUFFERSIZE = 480;
-
+        
         this.bufferSize = BUFFERSIZE;
-
-        const leftPtr = Module._malloc(BUFFERSIZE * 4);; 
-        this.leftPtr = leftPtr;
-        this.leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + BUFFERSIZE);
-        this.leftArray.fill(0);
-
-        const rightPtr = Module._malloc(BUFFERSIZE * 4);
-        this.rightPtr = rightPtr;
-        this.rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + BUFFERSIZE);
-        this.rightArray.fill(0);
-
+        this.initialized = false;
+        this.leftPtr = null;
+        this.rightPtr = null;        
         this.mod = 0;
 
         this.port.onmessage = async (event) => {
             await init;
+            if (!this.initialized) {
+                this.init();
+            }
 
             const {songData, setRepeatCount, setPosition, getPosition} = event.data;
 
@@ -78,6 +73,18 @@ class LibopenmptProcessor extends AudioWorkletProcessor {
                 this.port.postMessage(this.mod, {position: getPosition_()});
             }
         };
+    }
+
+    init() {
+        const leftPtr = Module._malloc(BUFFERSIZE * 4);; 
+        this.leftPtr = leftPtr;
+        this.leftArray = Module.HEAPF32.subarray(leftPtr >> 2, (leftPtr >> 2) + BUFFERSIZE);
+        this.leftArray.fill(0);
+
+        const rightPtr = Module._malloc(BUFFERSIZE * 4);
+        this.rightPtr = rightPtr;
+        this.rightArray = Module.HEAPF32.subarray(rightPtr >> 2, (rightPtr >> 2) + BUFFERSIZE);
+        this.rightArray.fill(0);
     }
 
     process(inputs, outputs, parameters) {

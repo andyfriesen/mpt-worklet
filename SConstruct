@@ -187,12 +187,15 @@ def EmscriptenEnvironment():
 
     exportedFunctions = [
         '_load',
+        '_unload',
         '_process1',
         '_process2',
         '_process4',
         '_setRepeatCount',
         '_setPosition',
-        '_getPosition'
+        '_getPosition',
+        '_malloc',
+        '_free',
     ]
 
     emscriptenCommonOpts = []
@@ -202,7 +205,7 @@ def EmscriptenEnvironment():
         '-s', 'ENVIRONMENT=worker',
         '-s', 'SINGLE_FILE=1',
         '-s', 'EXPORTED_FUNCTIONS=' + json.dumps(exportedFunctions),
-        '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=[\'cwrap\']',
+        '-s', 'EXPORTED_RUNTIME_METHODS=[\'cwrap\']',
         '-s', 'DISABLE_EXCEPTION_CATCHING=0',
     ]
 
