@@ -15,15 +15,14 @@ struct ModPlayer {
 
 // FIXME: If we used the C API instead, we could delete this whole file and do it all on the JS side.
 
-extern "C" ModPlayer* load(void* data, int dataSize) {
+extern "C" ModPlayer* load(const void* data, int dataSize) {
     if (!data) {
         return nullptr;
     }
 
     try {
-        if (const auto mpt = new openmpt::module(data, dataSize)) {
-            return new ModPlayer { mpt };
-        }
+        const auto mpt = new openmpt::module(data, dataSize);
+        return new ModPlayer { mpt };
     } catch (const openmpt::exception& e) {
         printf("Failed to load module: %s\n", e.what());
     } catch (const std::exception& e) {
@@ -85,12 +84,8 @@ extern "C" void setPosition(ModPlayer* mod, double pos) {
     }
 }
 
-extern "C" double getPosition(ModPlayer* mod) {
-    if (mod) {
-        return mod->mpt->get_position_seconds();
-    } else {
-        return 0;
-    }
+extern "C" double getPosition(const ModPlayer* mod) {
+    return mod ? mod->mpt->get_position_seconds() : 0;
 }
 
 extern "C" void setPaused(ModPlayer* mod, bool paused) {
@@ -99,8 +94,6 @@ extern "C" void setPaused(ModPlayer* mod, bool paused) {
     }
 }
 
-extern "C" bool getPaused(ModPlayer* mod) {
-    if (mod) {
-        return mod->paused;
-    }
+extern "C" bool getPaused(const ModPlayer* mod) {
+    return mod ? mod->paused : false;
 }
