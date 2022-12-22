@@ -10,7 +10,8 @@
 
 #include "libopenmpt/libopenmpt.hpp"
 
-const int SAMPLERATE = 48000;
+constexpr int SAMPLERATE = 48000;
+constexpr int ADDITIONAL_GAIN_MILLIBELS = 1500;
 
 struct ModPlayer {
     openmpt::module* mpt = nullptr;
@@ -27,6 +28,7 @@ extern "C" ModPlayer* load(const void* data, int dataSize) {
     openmpt::module* mpt = nullptr;
     try {
         mpt = new openmpt::module(data, dataSize);
+        mpt->set_render_param(openmpt::module::RENDER_MASTERGAIN_MILLIBEL, ADDITIONAL_GAIN_MILLIBELS);
         return new ModPlayer { mpt };
     } catch (const openmpt::exception& e) {
         printf("Failed to load module: %s\n", e.what());
